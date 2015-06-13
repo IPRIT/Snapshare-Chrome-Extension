@@ -8,9 +8,17 @@ chrome.runtime.onConnect.addListener(function(port) {
                 });
                 break;
             case 'YOUTUBE':
+                sendResponse(port, {
+                    type: 'REQUEST_RECEIVED_YOUTUBE',
+                    sent_object_timestamp: msg.data.timestamp
+                });
                 showYoutubeIframe(msg);
                 break;
             case 'IMAGE':
+                sendResponse(port, {
+                    type: 'REQUEST_RECEIVED_IMAGE',
+                    sent_object_timestamp: msg.data.timestamp
+                });
                 showImage(msg);
                 break;
             default:
@@ -18,6 +26,10 @@ chrome.runtime.onConnect.addListener(function(port) {
         }
     });
 });
+
+function sendResponse(port, params) {
+    port.postMessage(params);
+}
 
 function showYoutubeIframe(message) {
     var interface_yt = {

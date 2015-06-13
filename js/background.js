@@ -58,6 +58,7 @@ window.Server = {
                 access_token: params.access_token,
                 data: data
             });
+            updateContextMenu();
         }
     },
     startObserving: function() {
@@ -66,22 +67,7 @@ window.Server = {
             console.log('Inited');
             socket.on('friend sent link', function(data) {
                 console.log(data);
-                chrome.storage.local.get('user.friends.vk', function(friends) {
-                    if (!Object.isEmpty(friends) && !Object.isEmpty(friends['user.friends.vk'])) {
-                        var friends_list = friends['user.friends.vk'];
-                        for (var el in friends_list) {
-                            if (!friends_list.hasOwnProperty(el)) continue;
-                            if (friends_list[el].social_id === data.from.social_id) {
-                                friends_list[el].numShare = friends_list[el].numShare !== undefined ?
-                                    friends_list[el].numShare + 1 : 0;
-                                break;
-                            }
-                        }
-                        chrome.storage.local.set({
-                            'user.friends.vk': friends_list
-                        }, function(){});
-                    }
-                });
+                incrementNumShare(data.from.social_id);
                 showNotification(data);
             });
         }
@@ -153,11 +139,12 @@ function getCurrentTabUrl(callback) {
     });
 }
 
+var timeoutTabResponse = 2 * 1000;
 function showData(data) {
     var url = data.data.message_value;
     getCurrentTabUrl(function(curTab) {
         var tabUrl = curTab && curTab.url ? curTab.url : '';
-        var port;
+        var port, timestamp = data.timestamp;
         if (isHttpUrl(tabUrl) && isYoutubeLink(url)) {
             var youTubeVideoId = getYoutubeVideoId(url);
             //открываем ютюб iframe
@@ -167,6 +154,16 @@ function showData(data) {
                 data: data,
                 video_id: youTubeVideoId
             });
+            port.onMessage.addListener(function(response) {
+                if (response && response.type && response.type === 'REQUEST_RECEIVED_YOUTUBE' &&
+                    timestamp === response.sent_object_timestamp) {
+                    clearTimeout(responseTimeoutYoutube);
+                    port = null;
+                }
+            });
+            var responseTimeoutYoutube = setTimeout(function() {
+                showDataInNewTab(data);
+            }, timeoutTabResponse);
             return;
         }
         if (isHttpUrl(tabUrl) && isImage(url)) {
@@ -177,6 +174,16 @@ function showData(data) {
                 data: data,
                 image_url: url
             });
+            port.onMessage.addListener(function(response) {
+                if (response && response.type && response.type === 'REQUEST_RECEIVED_IMAGE' &&
+                    timestamp === response.sent_object_timestamp) {
+                    clearTimeout(responseTimeoutImage);
+                    port = null;
+                }
+            });
+            var responseTimeoutImage = setTimeout(function() {
+                showDataInNewTab(data);
+            }, timeoutTabResponse);
             return;
         }
         showDataInNewTab(data);
@@ -194,6 +201,197 @@ function showData(data) {
     }
 }
 
+function genericOnClickImage(info, tab) {
+    var menuItemId = info.menuItemId;
+    if (info.mediaType === 'image' && /^(context_image(.*))/i.test(menuItemId)) {
+        var srcUrl = info.srcUrl;
+        var social_id = menuItemId.match(/^context_image_([a-zA-Z]{1,}_\d+)/i)[1];
+        chrome.storage.sync.get('ss_access_token', function(res) {
+            var access_token = res && res.ss_access_token ? res.ss_access_token : '';
+            if (!access_token) {
+                return;
+            }
+            Server.shareData({
+                message_type: 'LINK',
+                message_value: srcUrl
+            }, {
+                social_id: social_id,
+                access_token: access_token
+            });
+            incrementNumShare(social_id);
+        });
+    }
+}
+
+function genericOnClickPage(info, tab) {
+    var menuItemId = info.menuItemId;
+    if (/^(context_page(.*))/i.test(menuItemId)) {
+        var pageUrl = info.pageUrl;
+        var social_id = menuItemId.match(/^context_page_([a-zA-Z]{1,}_\d+)/i)[1];
+        chrome.storage.sync.get('ss_access_token', function(res) {
+            var access_token = res && res.ss_access_token ? res.ss_access_token : '';
+            if (!access_token) {
+                return;
+            }
+            Server.shareData({
+                message_type: 'LINK',
+                message_value: pageUrl
+            }, {
+                social_id: social_id,
+                access_token: access_token
+            });
+            incrementNumShare(social_id);
+        });
+    }
+}
+
+function createContextMenu() {
+    chrome.storage.sync.get('ss_access_token', function(res) {
+        var access_token = res && res.ss_access_token ? res.ss_access_token : '';
+        if (!access_token) {
+            return;
+        }
+        chrome.storage.local.get('user.friends.vk', function(friends) {
+            if (!Object.isEmpty(friends) && !Object.isEmpty(friends['user.friends.vk'])) {
+                friends = friends['user.friends.vk'];
+                var allFriends = getFrequentFriends(friends, 20);
+                var frequentFriends = allFriends.frequent;
+                var otherFriends = allFriends.other;
+
+                var parentSnapshare = chrome.contextMenus.create({
+                    title: 'Snapshare',
+                    type: "normal",
+                    contexts: ['all']
+                });
+                var parentImage = chrome.contextMenus.create({
+                    title: 'Поделиться изображением',
+                    contexts: ['image'],
+                    parentId: parentSnapshare
+                });
+                var parentPage = chrome.contextMenus.create({
+                    title: 'Поделиться страницей',
+                    type: 'normal',
+                    parentId: parentSnapshare,
+                    contexts: ['all']
+                });
+                var i, friend, friend_social_id;
+                for (i = 0; i < frequentFriends.length; ++i) {
+                    friend = frequentFriends[i];
+                    friend_social_id = friend.social_id;
+                    chrome.contextMenus.create({
+                        id: 'context_image_' + friend_social_id,
+                        title: friend.first_name + ' ' + friend.last_name,
+                        onclick: genericOnClickImage,
+                        parentId: parentImage,
+                        contexts: ['image']
+                    });
+                    chrome.contextMenus.create({
+                        id: 'context_page_' + friend_social_id,
+                        title: friend.first_name + ' ' + friend.last_name,
+                        onclick: genericOnClickPage,
+                        parentId: parentPage,
+                        contexts: ['all']
+                    });
+                }
+
+                if (Array.isArray(otherFriends) && otherFriends.length > 0) {
+                    chrome.contextMenus.create({
+                        type: 'separator',
+                        parentId: parentImage,
+                        contexts: ['all']
+                    });
+                    chrome.contextMenus.create({
+                        type: 'separator',
+                        parentId: parentPage,
+                        contexts: ['all']
+                    });
+                }
+
+                for (i = 0; i < otherFriends.length; ++i) {
+                    friend = otherFriends[i];
+                    friend_social_id = friend.social_id;
+                    chrome.contextMenus.create({
+                        id: 'context_image_' + friend_social_id,
+                        title: friend.first_name + ' ' + friend.last_name,
+                        onclick: genericOnClickImage,
+                        parentId: parentImage,
+                        contexts: ['image']
+                    });
+                    chrome.contextMenus.create({
+                        id: 'context_page_' + friend_social_id,
+                        title: friend.first_name + ' ' + friend.last_name,
+                        onclick: genericOnClickPage,
+                        parentId: parentPage,
+                        contexts: ['all']
+                    });
+                }
+            }
+        });
+    });
+}
+
+createContextMenu();
+var updateContextMenu = function() {
+    chrome.contextMenus.removeAll(function() {
+        createContextMenu();
+        console.log('context menu updated');
+    });
+};
+
+function incrementNumShare(social_id) {
+    chrome.storage.local.get('user.friends.vk', function(friends) {
+        if (!Object.isEmpty(friends) && !Object.isEmpty(friends['user.friends.vk'])) {
+            var friends_list = friends['user.friends.vk'];
+            for (var el in friends_list) {
+                if (!friends_list.hasOwnProperty(el)) continue;
+                if (friends_list[el].social_id === social_id) {
+                    friends_list[el].numShare = friends_list[el].numShare !== undefined ?
+                    friends_list[el].numShare + 1 : 0;
+                    break;
+                }
+            }
+            chrome.storage.local.set({
+                'user.friends.vk': friends_list
+            }, function(){});
+        }
+    });
+}
+
+function getFrequentFriends(items, count) {
+    var criteriaItems = [];
+    for (var el in items) {
+        if (!items.hasOwnProperty(el)) continue;
+        if (items[el].numShare !== undefined && items[el].numShare > 0) {
+            criteriaItems.push(clone(items[el]));
+        }
+    }
+    criteriaItems.sort(function(first, second) {
+        if (!first.numShare && !second.numShare) {
+            return 0;
+        }
+        if (!second.numShare) {
+            return -1;
+        }
+        if (!first.numShare) {
+            return 1;
+        }
+        if (first.numShare > second.numShare) {
+            return -1;
+        } else if (first.numShare < second.numShare) {
+            return 1;
+        }
+        return 0;
+    });
+    var restFreeLength = count - criteriaItems.length;
+    var other = [];
+    if (count > 0) {
+        other = items.slice(0, Math.min(restFreeLength, items.length));
+    }
+    return {
+        frequent: criteriaItems.slice(0, Math.min(count, criteriaItems.length)),
+        other: other
+    };
+}
 
 
 
@@ -204,6 +402,17 @@ function showData(data) {
 
 
 
+
+
+
+function clone(obj){
+    if(obj == null || typeof(obj) != 'object')
+        return obj;
+    var temp = new obj.constructor();
+    for(var key in obj)
+        temp[key] = clone(obj[key]);
+    return temp;
+}
 Object.isEmpty = function(self) {
     if (self == null) return false;//
     if (self instanceof Array || typeof self == 'string') return !self.length;
