@@ -1,7 +1,7 @@
 {
   "name": "Snapshare",
   "description": "Snapshare — самый простой и быстрый способ поделиться ссылкой с другом!",
-  "version": "0.0.4",
+  "version": "0.0.6",
   "short_name": "Snapshare",
   "manifest_version": 2,
   "content_scripts": [{

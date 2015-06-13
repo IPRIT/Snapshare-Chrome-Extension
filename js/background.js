@@ -32,6 +32,7 @@ window.Server = {
                 authed = true;
                 _this.hasConnect = true;
                 _this.startObserving();
+                updateContextMenu();
             });
 
             socket.on('are you connected', function() {
@@ -257,6 +258,10 @@ function createContextMenu() {
                 var allFriends = getFrequentFriends(friends, 20);
                 var frequentFriends = allFriends.frequent;
                 var otherFriends = allFriends.other;
+                if (!frequentFriends.length) {
+                    allFriends = getFrequentFriends(friends, 500);
+                    otherFriends = allFriends.other;
+                }
 
                 var parentSnapshare = chrome.contextMenus.create({
                     title: 'Snapshare',
@@ -325,6 +330,11 @@ function createContextMenu() {
                         contexts: ['all']
                     });
                 }
+                console.log('context menu updated');
+            } else {
+                setTimeout(function() {
+                    updateContextMenu();
+                }, 2000);
             }
         });
     });
@@ -334,7 +344,6 @@ createContextMenu();
 var updateContextMenu = function() {
     chrome.contextMenus.removeAll(function() {
         createContextMenu();
-        console.log('context menu updated');
     });
 };
 
