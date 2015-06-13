@@ -1,0 +1,48 @@
+{
+  "name": "Snapshare",
+  "description": "Snapshare — самый простой и быстрый способ поделиться ссылкой с другом!",
+  "version": "0.0.4",
+  "short_name": "Snapshare",
+  "manifest_version": 2,
+  "content_scripts": [{
+	"matches": [
+	  "http://*/*",
+	  "https://*/*"
+	],
+	"js": [
+	  "js/page_inject.js",
+	  "js/jquery-2.1.4.min.js"
+	],
+	"css": [
+	  "css/css_inject.css"
+	]
+  }],
+  "background": {
+	"scripts": [
+	  "js/background.js"
+	]
+  },
+  "browser_action": {
+	"default_icon": "img/icon-logo-128.png",
+	"default_popup": "popup.html",
+	"default_title": "Поделиться страницей с другом"
+  },
+  "permissions": [
+	"notifications",
+	"storage",
+	"unlimitedStorage",
+	"tabs",
+	"contextMenus",
+	"activeTab",
+	"https://*/*/",
+	"http://*/*/"
+  ],
+  "icons": {
+	"16": "img/icon-logo-128.png",
+	"32": "img/icon-logo-128.png",
+	"60": "img/icon-logo-128.png",
+	"64": "img/icon-logo-128.png",
+	"90": "img/icon-logo-128.png",
+	"128": "img/icon-logo-128.png"
+  }
+}

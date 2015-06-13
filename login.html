@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Auth snapshare</title>
+    <style>
+        html,body {
+            padding: 0;
+            margin: 0;
+            background: #f0f0f0;
+            height: 100%;
+        }
+        .auth_block {
+            padding: 20px 0;
+            text-align: center;
+        }
+        .auth_block span {
+            font-size: 20px;
+        }
+        .auth_button {
+            border: 1px solid #f04553;
+            background-color: rgba(255, 73, 87, 0.9);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 2px;
+            cursor: pointer;
+            -webkit-transition: all .1s ease-in-out;
+            -moz-transition: all .1s ease-in-out;
+            -ms-transition: all .1s ease-in-out;
+            -o-transition: all .1s ease-in-out;
+            transition: all .1s ease-in-out;
+            outline: none;
+        }
+        .auth_button:hover {
+            background-color: rgba(255, 73, 87, 0.81);
+        }
+        .auth_button:active {
+            background-color: rgb(215, 62, 76);
+        }
+    </style>
+</head>
+<body>
+    <div class="auth_block">
+        <span>Авторизируйтесь, чтобы начать пользоваться расширением</span>
+        <br>
+        <br>
+        <button class="auth_button" id="auth_vk_button">Войти с помощью ВКонтакте</button>
+        <h2 id="result_text"></h2>
+    </div>
+    <script src="js/config.js"></script>
+    <script src="js/login.js"></script>
+</body>
+</html>

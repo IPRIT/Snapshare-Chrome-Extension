@@ -1,0 +1,24 @@
+<!doctype html>
+<!--
+ This page is shown when the extension button is clicked, because the
+ "browser_action" field in manifest.json contains the "default_popup" key with
+ value "popup.html".
+ -->
+<html>
+    <head>
+        <title>Snapshare</title>
+        <meta charset="utf-8">
+        <link rel="stylesheet" href="css/style.css">
+        <script src="js/config.js"></script>
+        <script src="js/SnapShareApi.js"></script>
+        <script src="js/app.js"></script>
+        <script src="js/jquery-2.1.4.min.js"></script>
+        <script src="js/popup.js"></script>
+    </head>
+    <body>
+        <div id="popup_title" class="popup_title">Выберите друга из списка</div>
+        <div style="height: 65px; width: 100%;"></div>
+        <div class="friends_container" id="friends_container"></div>
+    </body>
+</html>
+

@@ -1,0 +1,124 @@
+html,body {
+    padding: 0;
+    width: 500px;
+    height: 600px;
+    margin: 0;
+    overflow-x: hidden;
+    overflow-y: hidden;
+}
+.popup_title {
+    padding: 15px 15px 18px;
+    background-color: #f04553;
+    position: fixed;
+    width: 100%;
+    color: #fff;
+    font-size: 20px;
+    -webkit-box-shadow: 0 0 1px 1px rgba(0, 0, 0, 0.2);
+    -moz-box-shadow: 0 0 1px 1px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 0 1px 1px rgba(0, 0, 0, 0.2);
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+.friends_container {
+    background-color: #fff;
+    height: 535px;
+    overflow-y: auto;
+}
+.friend_item {
+    cursor: pointer;
+    white-space: normal;
+    padding: 10px 20px;
+    -webkit-transition: all .1s ease-in-out;
+    -moz-transition: all .1s ease-in-out;
+    -ms-transition: all .1s ease-in-out;
+    -o-transition: all .1s ease-in-out;
+    transition: all .1s ease-in-out;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+.friend_item:hover {
+    background-color: #f0f0f0;
+}
+.friend_item:active {
+    background-color: #eaeaea;
+}
+.friend_item__avatar, .friend_item__fullname {
+    display: inline-block;
+    vertical-align: top;
+}
+.friend_item__avatar {
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+}
+.friend_item__fullname {
+    margin-left: 15px;
+    padding: 7px;
+    font-size: 16px;
+}
+.success_message {
+    background-color: rgba(0,255,0,0.05);
+    border: 1px solid rgba(0,255,0,0.15);
+    border-radius: 2px;
+    padding: 15px;
+    width: 60%;
+    margin: 20px auto 20px;
+    text-align: center;
+    font-size: 16px;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+.success_message a {
+    text-decoration: none;
+    color: #ff4957;
+    display: inline-block;
+    padding: 2px;
+    border-radius: 2px;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 5px;
+    -webkit-transition: all .1s ease-in-out;
+    -moz-transition: all .1s ease-in-out;
+    -ms-transition: all .1s ease-in-out;
+    -o-transition: all .1s ease-in-out;
+    transition: all .1s ease-in-out;
+}
+.success_message a:hover {
+    background-color: rgba(240, 69, 83, 0.23);
+}
+.space {
+    height: 30px;
+    width: 100%;
+}
+.friends_list__title {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    cursor: pointer;
+    padding: 5px 10px 7px 31px;
+    font-size: 14px;
+    color: #777;
+    -webkit-transition: all .1s ease-in-out;
+    -moz-transition: all .1s ease-in-out;
+    -ms-transition: all .1s ease-in-out;
+    -o-transition: all .1s ease-in-out;
+    transition: all .1s ease-in-out;
+    background-image: url(/img/ic_expand_more_black_48dp.png);
+    background-repeat: no-repeat;
+    background-position: 4px center;
+    background-size: 25px;
+}
+.friends_list__title:active {
+    background-color: rgba(0,0,0,0.25);
+}
+.block_hidden_title {
+    background-image: url(/img/ic_chevron_right_black_48dp.png);
+}
